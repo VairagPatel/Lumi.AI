@@ -6,10 +6,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients
-public class GhbliapiApplication {
+public class LumiAiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GhbliapiApplication.class, args);
+		SpringApplication.run(LumiAiApplication.class, args);
 	}
 
 }

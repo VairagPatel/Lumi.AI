@@ -1,4 +1,4 @@
-package in.bushansirgur.ghbliapi.service;
+package in.LumiAI.api.service;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;

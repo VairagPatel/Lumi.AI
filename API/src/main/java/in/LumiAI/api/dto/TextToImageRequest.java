@@ -1,4 +1,4 @@
-package in.bushansirgur.ghbliapi.dto;
+package in.LumiAI.api.dto;
 
 import java.util.List;
 

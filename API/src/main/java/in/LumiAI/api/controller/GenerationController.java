@@ -1,7 +1,8 @@
-package in.bushansirgur.ghbliapi.controller;
+// in.LumiAI.api.controller.GenerationController
+package in.LumiAI.api.controller;
 
-import in.bushansirgur.ghbliapi.dto.TextGenerationRequestDTO;
-import in.bushansirgur.ghbliapi.service.GhibliArtService;
+import in.LumiAI.api.dto.TextGenerationRequestDTO;
+import in.LumiAI.api.service.GhibliArtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,15 @@ public class GenerationController {
 
     private final GhibliArtService ghibliArtService;
 
-    @PostMapping(value = "/generate", produces = MediaType.IMAGE_PNG_VALUE)
-    public ResponseEntity<byte[]> generateGhibliArt(@RequestParam("image")MultipartFile image,
-                                                    @RequestParam("prompt") String prompt) {
+    // 👇 image + prompt (multipart/form-data) -> returns image/png
+    @PostMapping(
+            value = "/generate",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.IMAGE_PNG_VALUE
+    )
+    public ResponseEntity<byte[]> generateGhibliArt(
+            @RequestPart("image") MultipartFile image,
+            @RequestPart(value = "prompt", required = false) String prompt) {
         try {
             byte[] imageBytes = ghibliArtService.createGhibliArt(image, prompt);
             return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes);
@@ -28,12 +35,19 @@ public class GenerationController {
         }
     }
 
-    @PostMapping(value = "/generate-from-text", produces = MediaType.IMAGE_PNG_VALUE)
+    // 👇 JSON {prompt, style} -> returns image/png
+    @PostMapping(
+            value = "/generate-from-text",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.IMAGE_PNG_VALUE
+    )
     public ResponseEntity<byte[]> generateGhibliArtFromText(@RequestBody TextGenerationRequestDTO requestDTO) {
         try {
-            byte[] imageBytes = ghibliArtService.createGhibliArtFromText(requestDTO.getPrompt(), requestDTO.getStyle());
+            byte[] imageBytes = ghibliArtService.createGhibliArtFromText(
+                    requestDTO.getPrompt(), requestDTO.getStyle()
+            );
             return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes);
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }

@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap');
+
+/* Tailwind layers */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global styles */
+body {
+  @apply bg-[#F9FAFB] text-[#0D1B2A] font-[Urbanist] antialiased;
+  line-height: 1.6;
+}
+
+/* Links */
+a {
+  @apply transition-colors duration-200;
+}
+a:hover {
+  @apply text-[#00E5A0];
+}
+
+/* Buttons */
+.btn {
+  @apply px-5 py-2 rounded-xl font-semibold shadow-md transition-transform duration-200;
+}
+.btn-primary {
+  @apply bg-gradient-to-r from-[#00E5A0] to-[#00C4CC] text-white hover:scale-105;
+}
+.btn-secondary {
+  @apply bg-[#0D1B2A] text-white hover:bg-[#00E5A0] hover:text-[#0D1B2A];
+}
+
+/* Cards */
+.card {
+  @apply bg-[#F3F4F6] rounded-2xl shadow-sm p-6 hover:shadow-md transition;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-[#F9FAFB];
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-[#00E5A0] rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-[#00C4CC];
+}

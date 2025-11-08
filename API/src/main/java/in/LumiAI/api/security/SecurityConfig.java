@@ -1,6 +1,7 @@
-package in.bushansirgur.ghbliapi.config;
+// in.LumiAI.api.config.SecurityConfig
+package in.LumiAI.api.config;
 
-import in.bushansirgur.ghbliapi.security.JwtAuthenticationFilter;
+import in.LumiAI.api.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,10 +14,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
-        this.jwtAuthFilter = jwtAuthFilter;
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
@@ -24,12 +25,22 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**").permitAll() // allow login/signup
-                        .anyRequest().authenticated() // protect everything else
+                        // ✅ Public endpoints
+                        .requestMatchers(
+                                "/api/v1/auth/**",
+                                "/oauth/callback",
+                                "/auth/**",
+                                "/api/v1/prompt/**",
+                                "/api/v1/generate",
+                                "/api/v1/generate-from-text",
+                                "/api/v1/health/**"
+                        ).permitAll()
+                        // everything else needs auth
+                        .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

@@ -1,4 +1,4 @@
-package in.bushansirgur.ghbliapi.service;
+package in.LumiAI.api.service;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;

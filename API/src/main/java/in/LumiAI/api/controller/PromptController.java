@@ -1,6 +1,6 @@
-package in.bushansirgur.ghbliapi.controller;
+package in.LumiAI.api.controller;
 
-import in.bushansirgur.ghbliapi.service.PromptService;
+import in.LumiAI.api.service.PromptService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

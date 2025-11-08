@@ -1,3 +1,79 @@
+/* Always keep imports at the very top */
 @import url('https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 
+/* Optional layers (Tailwind v4 syntax) */
+@layer theme, base, components, utilities;
+
+/* CSS Variables */
+:root {
+  --color-primary: #00E5A0;   /* Mint Green */
+  --color-secondary: #00C4CC; /* Aqua */
+  --color-dark: #0D1B2A;      /* Dark Navy */
+  --color-light: #F9FAFB;     /* Soft White */
+  --color-muted: #F3F4F6;     /* Light Gray */
+}
+
+/* Apply global font + background */
+body {
+  font-family: 'Urbanist', sans-serif;
+  background-color: var(--color-light);
+  color: var(--color-dark);
+  line-height: 1.6;
+}
+
+/* Links */
+a {
+  color: var(--color-primary);
+  transition: color 0.2s ease-in-out;
+}
+a:hover {
+  color: var(--color-secondary);
+}
+
+/* Buttons */
+.btn {
+  @apply px-5 py-2 rounded-xl font-semibold shadow-md transition-transform duration-200;
+}
+.btn-primary {
+  background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+  color: white;
+}
+.btn-primary:hover {
+  transform: scale(1.05);
+}
+.btn-secondary {
+  background-color: var(--color-dark);
+  color: white;
+}
+.btn-secondary:hover {
+  background-color: var(--color-primary);
+  color: var(--color-dark);
+}
+
+/* Cards */
+.card {
+  background-color: var(--color-muted);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s;
+}
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-light);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-secondary);
+}
