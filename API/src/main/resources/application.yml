@@ -1,0 +1,125 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: lumi-ai-api
+  
+  profiles:
+    active: dev
+  
+  main:
+    allow-circular-references: true
+  
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+  
+  datasource:
+    url: jdbc:mysql://localhost:3306/lumiaidb?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+    username: root
+    password: ${MYSQL_ROOT_PASSWORD:Vairag@310}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 60000
+  
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000  # 10 minutes
+
+# API Keys
+stability:
+  api:
+    url: https://api.stability.ai
+    key: ${STABILITY_API_KEY:your-stability-key}
+
+gemini:
+  api:
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
+    key: ${GEMINI_API_KEY:your-gemini-key}
+
+replicate:
+  api:
+    url: https://api.replicate.com
+    key: ${REPLICATE_API_KEY:your-replicate-key}
+
+# Cloudinary Configuration
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:your-cloud-name}
+  api-key: ${CLOUDINARY_API_KEY:your-api-key}
+  api-secret: ${CLOUDINARY_API_SECRET:your-api-secret}
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  expiration: 3600000  # 1 hour
+  refresh-expiration: 604800000  # 7 days
+
+# Google OAuth
+google:
+  client:
+    id: ${GOOGLE_CLIENT_ID:529485451848-dkiku68bgnk97g3sodrdkueut60p7k6t.apps.googleusercontent.com}
+
+# Credits Configuration
+credits:
+  default-amount: 15
+  per-generation: 1
+
+# Razorpay Configuration (Test Mode)
+# IMPORTANT: Get your credentials from https://dashboard.razorpay.com/app/keys
+razorpay:
+  key:
+    id: ${RAZORPAY_KEY_ID:rzp_test_RgUK2syr4q4GqY}
+    secret: ${RAZORPAY_KEY_SECRET:V1Xo7qH71Ulp3kU127dMKLqL}
+
+# Feign Configuration
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 10000
+        readTimeout: 60000
+
+# App Configuration
+app:
+  use-mock-generation: false  # Set to true to use mock images instead of real AI API
+  use-pollinations: true  # Set to true to use FREE Pollinations.ai (no API key needed!)
+
+# Logging
+logging:
+  level:
+    root: INFO
+    in.LumiAI.api: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/lumi-ai.log
+
+# Swagger/OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true

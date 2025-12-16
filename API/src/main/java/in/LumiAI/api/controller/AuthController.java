@@ -1,117 +1,100 @@
 package in.LumiAI.api.controller;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import in.LumiAI.api.security.JwtUtil;
-import org.springframework.beans.factory.annotation.Value;
+import in.LumiAI.api.dto.request.GoogleLoginRequest;
+import in.LumiAI.api.dto.request.LoginRequest;
+import in.LumiAI.api.dto.request.RefreshTokenRequest;
+import in.LumiAI.api.dto.request.SignupRequest;
+import in.LumiAI.api.dto.response.ApiResponse;
+import in.LumiAI.api.dto.response.AuthResponse;
+import in.LumiAI.api.service.AuthService;
+import in.LumiAI.api.service.CreditService;
+import in.LumiAI.api.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
+@Slf4j
+@Tag(name = "Authentication", description = "Authentication and authorization endpoints")
 public class AuthController {
 
-    private final JwtUtil jwtUtil;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final AuthService authService;
+    private final UserService userService;
+    private final CreditService creditService;
 
-    // 🗂️ In-memory user store (replace later with DB)
-    private final Map<String, String> users = new ConcurrentHashMap<>();
-
-    @Value("${google.client.id}")
-    private String googleClientId;
-
-    public AuthController(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
-    }
-
-    // ✅ Signup API
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody Map<String, String> request) {
-        String username = request.get("username");
-        String password = request.get("password");
-
-        if (users.containsKey(username)) {
-            return ResponseEntity.badRequest().body(Map.of("error", "User already exists"));
-        }
-
-        users.put(username, passwordEncoder.encode(password));
-        return ResponseEntity.ok(Map.of("message", "User registered successfully"));
+    @Operation(summary = "Register a new user")
+    public ResponseEntity<ApiResponse<AuthResponse>> signup(@Valid @RequestBody SignupRequest request) {
+        log.info("Signup request received for email: {}", request.getEmail());
+        AuthResponse response = authService.signup(request);
+        return ResponseEntity.ok(ApiResponse.success("User registered successfully", response));
     }
 
-    // ✅ Login API
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
-        String username = request.get("username");
-        String password = request.get("password");
-
-        String storedPassword = users.get(username);
-        if (storedPassword == null || !passwordEncoder.matches(password, storedPassword)) {
-            return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
-        }
-
-        // Generate JWT token
-        String token = jwtUtil.generateToken(username);
-
-        return ResponseEntity.ok(Map.of(
-                "token", token,
-                "email", username
-        ));
+    @Operation(summary = "Login with email and password")
+    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
+        log.info("Login request received for email: {}", request.getEmail());
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(ApiResponse.success("Login successful", response));
     }
 
-    // ✅ Google Login API
     @PostMapping("/google")
-    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> request) {
-        String idTokenString = request.get("token"); // frontend sends Google ID token
-
-        try {
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                    new NetHttpTransport(),
-                    JacksonFactory.getDefaultInstance()
-            ).setAudience(Collections.singletonList(googleClientId)) // verify client ID
-                    .build();
-
-            GoogleIdToken idToken = verifier.verify(idTokenString);
-
-            if (idToken != null) {
-                GoogleIdToken.Payload payload = idToken.getPayload();
-
-                String email = payload.getEmail();
-                String name = (String) payload.get("name");
-
-                // Auto-register user if not already in store
-                users.putIfAbsent(email, passwordEncoder.encode("google_oauth_user"));
-
-                // ✅ generate our own JWT
-                String jwt = jwtUtil.generateToken(email);
-
-                return ResponseEntity.ok(Map.of(
-                        "token", jwt,
-                        "email", email,
-                        "name", name
-                ));
-            } else {
-                return ResponseEntity.status(401).body(Map.of("error", "Invalid Google token"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                    "error", "Google verification failed",
-                    "details", e.getMessage()
-            ));
-        }
+    @Operation(summary = "Login with Google OAuth")
+    public ResponseEntity<ApiResponse<AuthResponse>> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
+        log.info("Google login request received");
+        AuthResponse response = authService.googleLogin(request);
+        return ResponseEntity.ok(ApiResponse.success("Google login successful", response));
     }
 
-    // ✅ Test protected API
-    @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.substring(7);
-        String username = jwtUtil.extractUsername(token);
+    @PostMapping("/refresh")
+    @Operation(summary = "Refresh access token")
+    public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        log.info("Token refresh request received");
+        AuthResponse response = authService.refreshToken(request);
+        return ResponseEntity.ok(ApiResponse.success("Token refreshed successfully", response));
+    }
 
-        return ResponseEntity.ok(Map.of("username", username));
+    @PostMapping("/logout")
+    @Operation(summary = "Logout user")
+    public ResponseEntity<ApiResponse<Void>> logout(Authentication authentication) {
+        String email = authentication.getName();
+        log.info("Logout request received for user: {}", email);
+        authService.logout(email);
+        return ResponseEntity.ok(ApiResponse.success("Logout successful", null));
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Get current user information")
+    public ResponseEntity<ApiResponse<AuthResponse.UserResponse>> getCurrentUser(Authentication authentication) {
+        String email = authentication.getName();
+        var user = userService.findByEmail(email);
+
+        AuthResponse.UserResponse userResponse = AuthResponse.UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .roles(user.getRoles().stream()
+                        .map(role -> role.getName().name())
+                        .collect(java.util.stream.Collectors.toSet()))
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.success(userResponse));
+    }
+    
+    @GetMapping("/credits")
+    @Operation(summary = "Get current user's credit balance")
+    public ResponseEntity<ApiResponse<Integer>> getUserCredits(Authentication authentication) {
+        String email = authentication.getName();
+        var user = userService.findByEmail(email);
+        var credit = creditService.getCreditByUser(user);
+        return ResponseEntity.ok(ApiResponse.success("Current credit balance", credit.getBalance()));
     }
 }

@@ -1,0 +1,112 @@
+spring:
+  application:
+    name: lumi-ai-api
+  
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MySQLDialect
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  datasource:
+    url: ${DATABASE_URL:jdbc:mysql://mysql:3306/lumiaidb?useSSL=true&requireSSL=true&serverTimezone=UTC}
+    username: ${DATABASE_USERNAME:lumiuser}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 60000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+  
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+
+# API Keys (Must be set via environment variables)
+stability:
+  api:
+    url: https://api.stability.ai
+    key: ${STABILITY_API_KEY}
+
+gemini:
+  api:
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent
+    key: ${GEMINI_API_KEY}
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 3600000
+  refresh-expiration: 604800000
+
+# Google OAuth
+google:
+  client:
+    id: ${GOOGLE_CLIENT_ID}
+
+# Feign Configuration
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 10000
+        readTimeout: 60000
+        loggerLevel: basic
+
+# Logging
+logging:
+  level:
+    root: WARN
+    in.LumiAI.api: INFO
+    org.springframework.security: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /var/log/lumi-ai/application.log
+    max-size: 10MB
+    max-history: 30
+
+# Swagger (Disabled in production for security)
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+# Server Configuration
+server:
+  port: 8080
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+  error:
+    include-message: never
+    include-stacktrace: never

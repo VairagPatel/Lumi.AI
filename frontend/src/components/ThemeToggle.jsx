@@ -1,27 +1,31 @@
-import { Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+// src/components/ThemeToggle.jsx
+import { Moon, Sun } from 'lucide-react';
+import { motion } from 'framer-motion';
+import useThemeStore from '../store/useThemeStore';
 
 const ThemeToggle = () => {
-  const [theme, setTheme] = useState(
-    localStorage.getItem("lumiai-theme") || "light"
-  );
-
-  useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    localStorage.setItem("lumiai-theme", theme);
-  }, [theme]);
+  const { isDark, toggleTheme } = useThemeStore();
 
   return (
-    <button
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="p-2 rounded-full bg-muted dark:bg-dark text-dark dark:text-light hover:scale-110 transition"
+    <motion.button
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={toggleTheme}
+      className="relative p-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-all"
+      aria-label="Toggle theme"
     >
-      {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
-    </button>
+      <motion.div
+        initial={false}
+        animate={{ rotate: isDark ? 180 : 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        {isDark ? (
+          <Moon size={20} className="text-blue-400" />
+        ) : (
+          <Sun size={20} className="text-yellow-500" />
+        )}
+      </motion.div>
+    </motion.button>
   );
 };
 

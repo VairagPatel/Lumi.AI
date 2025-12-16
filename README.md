@@ -1,153 +1,374 @@
+# LumiAI - AI-Powered Image Generation Platform
 
-<h1 align="center">🎨 LumiAI — AI-Powered Ghibli-Style Art Generator</h1>
+![LumiAI Logo](https://img.shields.io/badge/LumiAI-v2.0.0-00E5A0?style=for-the-badge&logo=react)
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Spring%20Boot-3.0-brightgreen?style=for-the-badge&logo=springboot" />
-  <img src="https://img.shields.io/badge/React-18.0-blue?style=for-the-badge&logo=react" />
-  <img src="https://img.shields.io/badge/TailwindCSS-3.0-38B2AC?style=for-the-badge&logo=tailwindcss" />
-  <img src="https://img.shields.io/badge/Stability%20AI-Integration-orange?style=for-the-badge&logo=ai" />
-  <img src="https://img.shields.io/badge/JWT-Security-red?style=for-the-badge&logo=jsonwebtokens" />
-</p>
+LumiAI is a modern, full-stack web application that leverages artificial intelligence to generate stunning images from text prompts. Built with React and Spring Boot, it offers a seamless user experience with authentication, credit-based usage, and a beautiful mint-themed interface.
+
+## 🌟 Features
+
+### Core Functionality
+- **AI Image Generation**: Transform text prompts into high-quality images
+- **User Authentication**: Secure login/signup with email and Google OAuth
+- **Credit System**: Fair usage system with credit-based image generation
+- **Responsive Design**: Beautiful UI that works on all devices
+- **Real-time Updates**: Live feedback and progress indicators
+
+### User Experience
+- **Modern UI/UX**: Clean, mint-themed interface with smooth animations
+- **Performance Optimized**: Fast loading times and efficient rendering
+- **Accessibility**: WCAG compliant with proper ARIA labels
+- **Cross-browser Support**: Works on Chrome, Firefox, Safari, and Edge
+
+## 🚀 Tech Stack
+
+### Frontend
+- **React 19.1.0** - Modern UI library with hooks
+- **Vite 6.3.5** - Fast build tool and dev server
+- **Tailwind CSS 4.1.12** - Utility-first CSS framework
+- **Framer Motion 12.23.12** - Smooth animations and transitions
+- **React Router 7.8.2** - Client-side routing
+- **Zustand 5.0.2** - Lightweight state management
+- **Axios 1.11.0** - HTTP client for API calls
+- **React Hot Toast 2.4.1** - Beautiful notifications
+
+### Backend
+- **Spring Boot 3.x** - Java-based backend framework
+- **Spring Security** - Authentication and authorization
+- **Spring Data JPA** - Database abstraction layer
+- **MySQL** - Relational database
+- **JWT** - JSON Web Tokens for authentication
+- **Maven** - Dependency management
+
+### Development Tools
+- **ESLint** - Code linting and formatting
+- **Vitest** - Unit testing framework
+- **Testing Library** - React component testing
+- **Git** - Version control
+
+## 📁 Project Structure
+
+```
+LumiAI/
+├── Frontend/                 # React frontend application
+│   ├── public/              # Static assets
+│   ├── src/
+│   │   ├── components/      # Reusable UI components
+│   │   │   ├── ui/         # Base UI components (Button, Input, etc.)
+│   │   │   └── ...         # Feature-specific components
+│   │   ├── pages/          # Page components
+│   │   ├── context/        # React context providers
+│   │   ├── store/          # Zustand state stores
+│   │   ├── services/       # API service functions
+│   │   ├── utils/          # Utility functions
+│   │   ├── tests/          # Test files
+│   │   └── styles/         # Global styles
+│   ├── package.json        # Frontend dependencies
+│   └── vite.config.js      # Vite configuration
+├── API/                     # Spring Boot backend
+│   ├── src/
+│   │   └── main/
+│   │       ├── java/       # Java source code
+│   │       └── resources/  # Configuration files
+│   ├── pom.xml            # Maven dependencies
+│   └── target/            # Compiled classes
+├── .env.example           # Environment variables template
+├── .gitignore            # Git ignore rules
+├── LICENSE               # MIT License
+└── README.md            # This file
+```
+
+## 🛠️ Installation & Setup
+
+### Prerequisites
+- **Node.js** (v18 or higher)
+- **Java** (v17 or higher)
+- **MySQL** (v8.0 or higher)
+- **Maven** (v3.6 or higher)
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/yourusername/LumiAI.git
+cd LumiAI
+```
+
+### 2. Database Setup
+```sql
+-- Create database
+CREATE DATABASE lumiai_db;
+
+-- Create user (optional)
+CREATE USER 'lumiai_user'@'localhost' IDENTIFIED BY 'your_password';
+GRANT ALL PRIVILEGES ON lumiai_db.* TO 'lumiai_user'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+### 3. Backend Setup
+```bash
+cd API
+
+# Copy environment file
+cp .env.example .env
+
+# Edit .env with your database credentials
+# DB_URL=jdbc:mysql://localhost:3306/lumiai_db
+# DB_USERNAME=lumiai_user
+# DB_PASSWORD=your_password
+# JWT_SECRET=your_jwt_secret_key
+
+# Install dependencies and run
+./mvnw clean install
+./mvnw spring-boot:run
+```
+
+The backend will start on `http://localhost:8080`
+
+### 4. Frontend Setup
+```bash
+cd Frontend
+
+# Install dependencies
+npm install
+
+# Copy environment file
+cp .env.example .env
+
+# Edit .env with your configuration
+# VITE_API_BASE_URL=http://localhost:8080/api
+# VITE_GOOGLE_CLIENT_ID=your_google_client_id
+
+# Start development server
+npm run dev
+```
+
+The frontend will start on `http://localhost:5173`
+
+## 🔧 Configuration
+
+### Environment Variables
+
+#### Backend (.env in API folder)
+```env
+# Database Configuration
+DB_URL=jdbc:mysql://localhost:3306/lumiai_db
+DB_USERNAME=your_db_username
+DB_PASSWORD=your_db_password
+
+# JWT Configuration
+JWT_SECRET=your_super_secret_jwt_key_here
+JWT_EXPIRATION=86400000
+
+# Google OAuth (optional)
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# AI Service Configuration
+AI_API_KEY=your_ai_service_api_key
+AI_API_URL=https://api.your-ai-service.com
+```
+
+#### Frontend (.env in Frontend folder)
+```env
+# API Configuration
+VITE_API_BASE_URL=http://localhost:8080/api
+
+# Google OAuth
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+
+# App Configuration
+VITE_APP_NAME=LumiAI
+VITE_APP_VERSION=2.0.0
+```
+
+## 🚀 Usage
+
+### For Users
+
+1. **Sign Up/Login**
+   - Create an account with email and password
+   - Or use Google OAuth for quick access
+   - New users receive 15 free credits
+
+2. **Generate Images**
+   - Navigate to the Create page
+   - Enter a descriptive text prompt
+   - Click "Generate" to create your image
+   - Each generation costs 1 credit
+
+3. **Manage Account**
+   - View your profile and remaining credits
+   - Purchase additional credits as needed
+   - Browse your generation history
+
+### For Developers
+
+#### Running Tests
+```bash
+# Frontend tests
+cd Frontend
+npm run test
+
+# Backend tests
+cd API
+./mvnw test
+```
+
+#### Building for Production
+```bash
+# Build frontend
+cd Frontend
+npm run build
+
+# Build backend
+cd API
+./mvnw clean package
+```
+
+#### Code Quality
+```bash
+# Lint frontend code
+cd Frontend
+npm run lint
+
+# Format code
+npm run format
+```
+
+## 🎨 Design System
+
+### Color Palette
+- **Primary**: `#00E5A0` (Mint Green)
+- **Secondary**: `#00C4CC` (Teal)
+- **Dark**: `#0D1B2A` (Navy Blue)
+- **Light**: `#F8FAFC` (Off White)
+
+### Typography
+- **Headings**: Inter, system fonts
+- **Body**: Inter, system fonts
+- **Monospace**: Fira Code, monospace
+
+### Components
+All UI components follow a consistent design system with:
+- Rounded corners (8px, 12px, 16px)
+- Consistent spacing (4px grid)
+- Smooth animations (200-300ms)
+- Accessible color contrasts
+
+## 🔒 Security Features
+
+- **JWT Authentication**: Secure token-based auth
+- **Password Hashing**: BCrypt encryption
+- **CORS Protection**: Configured for production
+- **Input Validation**: Server-side validation
+- **Rate Limiting**: API endpoint protection
+- **SQL Injection Prevention**: Parameterized queries
+
+## 📱 API Documentation
+
+### Authentication Endpoints
+```
+POST /api/auth/signup     # User registration
+POST /api/auth/login      # User login
+POST /api/auth/google     # Google OAuth login
+POST /api/auth/refresh    # Refresh JWT token
+```
+
+### User Endpoints
+```
+GET  /api/user/profile    # Get user profile
+PUT  /api/user/profile    # Update user profile
+GET  /api/user/credits    # Get user credits
+POST /api/user/credits    # Purchase credits
+```
+
+### Image Generation Endpoints
+```
+POST /api/generate/image  # Generate image from prompt
+GET  /api/generate/history # Get generation history
+GET  /api/generate/{id}   # Get specific generation
+```
+
+## 🧪 Testing
+
+The project includes comprehensive testing:
+
+### Frontend Tests
+- **Unit Tests**: Component logic testing
+- **Integration Tests**: API integration testing
+- **E2E Tests**: User workflow testing
+- **Performance Tests**: Render performance monitoring
+
+### Backend Tests
+- **Unit Tests**: Service layer testing
+- **Integration Tests**: Database integration
+- **Security Tests**: Authentication testing
+- **API Tests**: Endpoint testing
+
+## 🚀 Deployment
+
+### Frontend Deployment (Vercel/Netlify)
+```bash
+cd Frontend
+npm run build
+# Deploy dist/ folder
+```
+
+### Backend Deployment (Heroku/AWS)
+```bash
+cd API
+./mvnw clean package
+# Deploy target/lumiai-api.jar
+```
+
+### Docker Deployment
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+- Follow the existing code style
+- Write tests for new features
+- Update documentation as needed
+- Use conventional commit messages
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **React Team** - For the amazing React framework
+- **Tailwind CSS** - For the utility-first CSS framework
+- **Spring Boot** - For the robust backend framework
+- **Framer Motion** - For smooth animations
+- **Lucide Icons** - For beautiful icons
+
+## 📞 Support
+
+For support, email support@lumiai.com or join our Discord community.
+
+## 🗺️ Roadmap
+
+- [ ] Advanced image editing tools
+- [ ] Batch image generation
+- [ ] API for developers
+- [ ] Mobile app (React Native)
+- [ ] Advanced AI models
+- [ ] Team collaboration features
 
 ---
 
-### 🧠 Overview  
-**LumiAI** is a **full-stack AI-powered platform** that transforms your text or image prompts into **Studio Ghibli–style digital artwork**.  
-Built with **Spring Boot**, **React.js**, and **Tailwind CSS**, LumiAI combines secure authentication, real-time API integration, and an elegant frontend to deliver a magical AI art experience ✨  
+**Made with ❤️ by the LumiAI Team**
 
----
-
-## 🚀 Features
-
-✅ **AI Art Generation** — Convert text or image prompts into Ghibli-style artwork using **Stability AI API**.  
-✅ **Secure Authentication** — JWT + Spring Security with **role-based access control** (Admin/User/Guest).  
-✅ **Multi-tab Interface** — Seamless navigation between text-to-image and image-to-image tabs.  
-✅ **Guest Mode** — Limited feature access for new visitors.  
-✅ **Responsive Design** — Clean, mobile-friendly UI built with **React + TailwindCSS**.  
-✅ **API Documentation** — All endpoints documented and validated via **Gemini API**.  
-✅ **Scalability Tested** — Successfully generated 500+ AI images with optimized backend performance.  
-
----
-
-## 🏗️ Architecture Overview
-
-Below is a visual architecture diagram — it highlights the full flow from frontend to backend, background worker, external AI API, and storage.
-
-![LumiAI Architecture](docs/lumi_architecture.svg)
-
-**Quick flow:**  
-Frontend (React + Tailwind) → API Gateway (Nginx) → Spring Boot Backend (JWT auth, FeignClient) → Stability AI (text2img/img2img) → Blob Storage / MongoDB. Background worker processes long-running jobs.
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology | Purpose |
-|:------|:------------|:---------|
-| Frontend | React.js, TailwindCSS | Dynamic, responsive UI |
-| Backend | Spring Boot 3, FeignClient | RESTful API + Stability AI integration |
-| Authentication | Spring Security, JWT | Token-based access control |
-| Database | MongoDB | Store user, prompt, and image metadata |
-| API Docs | Gemini API | API testing, validation, and documentation |
-| Deployment | Docker, Maven, GitHub Actions | CI/CD & containerized setup |
-
----
-
-## ⚙️ Installation & Setup
-
-### 🧩 Prerequisites
-- Java 17+  
-- Node.js 18+  
-- MongoDB (local or Atlas)  
-- Stability AI Account → [https://platform.stability.ai/](https://platform.stability.ai/)  
-
----
-
-### 🖥️ Backend Setup
-
-    # 1. Clone the repo
-    git clone https://github.com/<your-username>/LumiAI.git
-    cd LumiAI/API
-    
-    # 2. Configure application.properties (or environment variables)
-    # set STABILITY_API_KEY with your Stability API key
-    
-    # 3. Build & Run
-    mvn clean install
-    mvn spring-boot:run
-
-    Backend runs at ➜ http://localhost:8080
-
-###💻 Frontend Setup
-
-    cd ../Frontend
-    
-    # 1. Install dependencies
-    npm install
-    
-    # 2. Start the app
-    npm run dev
-    
-    
-    Frontend runs at ➜ http://localhost:5173
-
-🧩 Example Prompts
-    ✨ Calm & Cozy Studio Ambience
-    
-    “In a warmly lit, Ghibli-style room with wooden panels and books stacked on a desk,
-    a man sits peacefully in front of a studio microphone. The atmosphere is serene and magical.”
-    
-    🌙 Nighttime Creative Vibe
-    
-    “A moody, Ghibli-inspired attic at night filled with fairy lights and records,
-    a young artist recording music under the stars.”
-
-🔐 Authentication Flow
-
-    User logs in → Backend validates credentials.
-    Backend generates JWT Token with user role (Admin/User/Guest).
-    Token sent to frontend and stored in LocalStorage.
-    Every API request includes token in the Authorization header.
-    Spring Security verifies and grants access to protected endpoints.
-
-🧱 API Endpoints (Sample)
-
-      Method	Endpoint	Description
-      POST	/api/auth/login	Login user and generate JWT token
-      POST	/api/auth/register	Register new user
-      POST	/api/generate/text	Generate image from text prompt
-      POST	/api/generate/image	Generate image from uploaded image
-      GET	/api/history/{userId}	Fetch user’s generation history
-      
-🧠 Project Learnings
-
-    Integrated AI APIs with a real production-grade backend.
-    Implemented JWT Authentication with role-based access.
-    Built a multi-tab React UI optimized for UX and responsiveness.
-    Learned API documentation & validation via Gemini API.
-    Managed scalable performance — handled 500+ AI generations successfully.
-
-🌍 Future Enhancements
-
-    🚧 Add user dashboards for saved artwork
-    🚧 Add subscription plans for premium users
-    🚧 Integrate multiple art styles beyond Ghibli
-    🚧 Deploy full stack with Docker + AWS EC2
-    🚧 Add rate limiting & analytics dashboard
-
-🧑‍💻 Author
-
-    👨‍💻 Vairag Akbari
-    📍 B.Tech CSE @ VIT Bhopal University
-    💼 Full Stack Java Developer | AI Integration Enthusiast
-
-<p align="center"> <a href="mailto:vairag.techwork@gmail.com"><img src="https://img.shields.io/badge/Email-vairag.techwork%40gmail.com-red?style=for-the-badge&logo=gmail"></a> <a href="https://linkedin.com/in/vairagakbari"><img src="https://img.shields.io/badge/LinkedIn-Vairag%20Akbari-blue?style=for-the-badge&logo=linkedin"></a> <a href="https://github.com/VairagPatel"><img src="https://img.shields.io/badge/GitHub-VairagPatel-black?style=for-the-badge&logo=github"></a> </p>
-
-🧾 License
-
-    This project is licensed under the MIT License.
-    Feel free to fork and experiment — contributions are welcome! 🤝
-
-⭐ If you like this project, don’t forget to give it a star on GitHub!
-
-<p align="center"><b>✨ Made with ❤️ by <a href="https://github.com/VairagPatel">Vairag Akbari</a> ✨</b></p> 
+![GitHub stars](https://img.shields.io/github/stars/yourusername/LumiAI?style=social)
+![GitHub forks](https://img.shields.io/github/forks/yourusername/LumiAI?style=social)
+![GitHub issues](https://img.shields.io/github/issues/yourusername/LumiAI)
+![GitHub license](https://img.shields.io/github/license/yourusername/LumiAI)

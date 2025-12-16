@@ -4,30 +4,18 @@ import Spinner from "./Spinner.jsx";
 import { Download, FileText, PlusCircle } from "lucide-react";
 import GhibliStyleDropdown from "./GhibliStyleDropdown.jsx";
 import PromptBot from "./PromptBot.jsx";
-
-/* ---------- Helpers ---------- */
-
-// Converts base64 (without prefix) into Blob
-const base64ToBlob = (b64, mime = "image/png") => {
-  const byteChars = atob(b64);
-  const byteNums = new Array(byteChars.length);
-  for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
-  const byteArray = new Uint8Array(byteNums);
-  return new Blob([byteArray], { type: mime });
-};
-
-// API base (defaults to localhost)
-const getApiBase = () => import.meta.env.VITE_API_BASE || "http://localhost:8080";
+import { useTextToImage } from "../hooks/useGeneration.js";
 
 /* ---------- Component ---------- */
 
-const TextToImageSection = () => {
+const TextToImageSection = ({ onGenerate }) => {
   const [generatedImage, setGeneratedImage] = useState(null);
   const [prompt, setPrompt] = useState("");
   const [style, setStyle] = useState("general");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const textToImageMutation = useTextToImage();
+  const isLoading = textToImageMutation.isPending;
   const isCreateDisabled = isLoading || !prompt.trim();
 
   const handleGenerate = async () => {
@@ -36,78 +24,22 @@ const TextToImageSection = () => {
       return;
     }
 
-    setIsLoading(true);
     setError(null);
 
-    const payload = { prompt, style };
-
     try {
-      const API_URL = `${getApiBase()}/api/v1/generate-from-text`;
-
-      const token = localStorage.getItem("token");
-      const headers = {
-        "Content-Type": "application/json",
-        Accept: "image/png, image/jpeg, application/json",
-      };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60_000); // 60s timeout
-
-      const response = await fetch(API_URL, {
-        method: "POST",
-        mode: "cors",
-        headers,
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const maybeText = await response.text().catch(() => "");
-        throw new Error(
-          `Request failed (${response.status}). ${maybeText || "No error body"}`
-        );
-      }
-
-      // Handle raw image or JSON base64
-      const contentType = response.headers.get("content-type") || "";
-      if (contentType.includes("application/json")) {
-        const json = await response.json();
-        const b64 =
-          json.imageBase64 || json.image || json.data || json.result || null;
-
-        if (!b64) {
-          throw new Error("Response JSON missing image data.");
-        }
-
-        const cleaned = b64.includes(",") ? b64.split(",")[1] : b64;
-        const mime =
-          (json.mimeType && String(json.mimeType)) ||
-          (b64.startsWith("data:image/jpeg") ? "image/jpeg" : "image/png");
-
-        const blob = base64ToBlob(cleaned, mime);
-        setGeneratedImage(URL.createObjectURL(blob));
-      } else {
-        const blob = await response.blob();
-        setGeneratedImage(URL.createObjectURL(blob));
-      }
+      const response = await textToImageMutation.mutateAsync({ prompt, style });
+      
+      // Response is a blob
+      const blob = response.data;
+      const imageUrl = URL.createObjectURL(blob);
+      setGeneratedImage(imageUrl);
+      
+      // Notify parent component
+      if (onGenerate) onGenerate();
     } catch (err) {
       console.error("Error generating image from text:", err);
-      if (err.name === "AbortError") {
-        setError("Request timed out. Try again in a moment.");
-      } else if (String(err).includes("Failed to fetch")) {
-        setError(
-          "Failed to reach the backend. Is the API running on http://localhost:8080 and CORS enabled?"
-        );
-      } else {
-        setError(
-          err?.message ||
-            "Failed to generate image. Please ensure the backend is running and check the console."
-        );
-      }
-    } finally {
-      setIsLoading(false);
+      const errorMessage = err.response?.data?.message || err.message || "Failed to generate image";
+      setError(errorMessage);
     }
   };
 
@@ -167,7 +99,7 @@ const TextToImageSection = () => {
               <div>
                 <label
                   htmlFor="prompt-text"
-                  className="text-md font-semibold mb-2 block text-[#374151]"
+                  className="text-md font-semibold mb-2 block text-[#0D1B2A]"
                 >
                   Your Description
                 </label>
@@ -175,7 +107,7 @@ const TextToImageSection = () => {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   id="prompt-text"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00E5A0]"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00E5A0] text-[#0D1B2A] placeholder:text-gray-500"
                   rows="3"
                   placeholder="Describe the magical scene you want LumiAI to create..."
                 />

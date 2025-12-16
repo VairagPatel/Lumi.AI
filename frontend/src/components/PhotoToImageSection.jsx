@@ -4,33 +4,23 @@ import ErrorMessage from "./ErrorMessage.jsx";
 import PromptBot from "./PromptBot.jsx";
 import { useEffect, useRef, useState } from "react";
 import { Download, PlusCircle } from "lucide-react";
-
-/* ---------- Helpers ---------- */
-
-// Convert base64 → Blob
-const base64ToBlob = (b64, mime = "image/png") => {
-  const byteChars = atob(b64);
-  const byteNums = new Array(byteChars.length);
-  for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
-  const byteArray = new Uint8Array(byteNums);
-  return new Blob([byteArray], { type: mime });
-};
-
-const getApiBase = () => import.meta.env.VITE_API_BASE || "http://localhost:8080";
+import { useImageToImage } from "../hooks/useGeneration.js";
 
 /* ---------- Component ---------- */
 
-const PhotoToImageSection = () => {
+const PhotoToImageSection = ({ onGenerate }) => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [generatedImage, setGeneratedImage] = useState(null);
   const [prompt, setPrompt] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [downloadFormat, setDownloadFormat] = useState("png");
   const [recentImages, setRecentImages] = useState([]);
   const fileInputRef = useRef(null);
+
+  const imageToImageMutation = useImageToImage();
+  const isLoading = imageToImageMutation.isPending;
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("lumiai-previews")) || [];
@@ -60,67 +50,27 @@ const PhotoToImageSection = () => {
       return;
     }
 
-    setIsLoading(true);
     setError(null);
 
     const formData = new FormData();
     formData.append("image", uploadedFile);
-    formData.append("prompt", prompt);
+    formData.append("prompt", prompt || "");
 
     try {
-      const API_URL = `${getApiBase()}/api/v1/generate`;
-      const token = localStorage.getItem("token");
-
-      const headers = {};
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60_000);
-
-      const response = await fetch(API_URL, {
-        method: "POST",
-        mode: "cors",
-        headers,
-        body: formData,
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const text = await response.text().catch(() => "");
-        throw new Error(`Request failed (${response.status}). ${text || "No details"}`);
-      }
-
-      // Handle JSON (base64) or Blob
-      const contentType = response.headers.get("content-type") || "";
-      if (contentType.includes("application/json")) {
-        const json = await response.json();
-        const b64 = json.imageBase64 || json.image || json.data || json.result;
-        if (!b64) throw new Error("Response JSON missing image data.");
-
-        const cleaned = b64.includes(",") ? b64.split(",")[1] : b64;
-        const mime = json.mimeType || "image/png";
-        const blob = base64ToBlob(cleaned, mime);
-        const url = URL.createObjectURL(blob);
-        setGeneratedImage(url);
-        saveRecent(url);
-      } else {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setGeneratedImage(url);
-        saveRecent(url);
-      }
+      const response = await imageToImageMutation.mutateAsync(formData);
+      
+      // Response is a blob
+      const blob = response.data;
+      const url = URL.createObjectURL(blob);
+      setGeneratedImage(url);
+      saveRecent(url);
+      
+      // Notify parent component
+      if (onGenerate) onGenerate();
     } catch (err) {
       console.error("Error generating image:", err);
-      if (err.name === "AbortError") {
-        setError("Request timed out. Try again.");
-      } else if (String(err).includes("Failed to fetch")) {
-        setError("Backend unreachable. Ensure API is running & CORS enabled.");
-      } else {
-        setError(err?.message || "Image generation failed. Check console.");
-      }
-    } finally {
-      setIsLoading(false);
+      const errorMessage = err.response?.data?.message || err.message || "Image generation failed";
+      setError(errorMessage);
     }
   };
 
@@ -231,7 +181,7 @@ const PhotoToImageSection = () => {
               <div>
                 <label
                   htmlFor="prompt-photo"
-                  className="text-md font-semibold mb-2 block text-[#0D1B2A]"
+                  className="text-md font-semibold mb-2 block text-black"
                 >
                   Additional Details
                 </label>
@@ -239,7 +189,7 @@ const PhotoToImageSection = () => {
                   id="prompt-photo"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00E5A0]"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00E5A0] text-black"
                   rows="2"
                   placeholder="Add any specific details or enhancements..."
                 />

@@ -5,20 +5,23 @@
 /* Optional layers (Tailwind v4 syntax) */
 @layer theme, base, components, utilities;
 
-/* CSS Variables */
+/* CSS Variables - LumiAI Brand Palette */
 :root {
-  --color-primary: #00E5A0;   /* Mint Green */
-  --color-secondary: #00C4CC; /* Aqua */
-  --color-dark: #0D1B2A;      /* Dark Navy */
-  --color-light: #F9FAFB;     /* Soft White */
-  --color-muted: #F3F4F6;     /* Light Gray */
+  --color-primary: #00E5A0;     /* Mint Green */
+  --color-secondary: #00C4CC;   /* Teal */
+  --color-accent: #00B8A9;      /* Darker Teal */
+  --color-success: #10B981;     /* Emerald Green */
+  --color-dark: #0D1B2A;        /* Dark Blue */
+  --color-light: #F9FAFB;       /* Light Gray */
+  --color-muted: #F3F4F6;       /* Muted Gray */
+  --color-text: #0D1B2A;        /* Dark Blue Text */
 }
 
 /* Apply global font + background */
 body {
   font-family: 'Urbanist', sans-serif;
-  background-color: var(--color-light);
-  color: var(--color-dark);
+  background: linear-gradient(135deg, #F9FAFB 0%, #F0FDF4 100%);
+  color: var(--color-text);
   line-height: 1.6;
 }
 
@@ -33,22 +36,25 @@ a:hover {
 
 /* Buttons */
 .btn {
-  @apply px-5 py-2 rounded-xl font-semibold shadow-md transition-transform duration-200;
+  @apply px-6 py-3 rounded-xl font-semibold shadow-lg transition-all duration-300;
 }
 .btn-primary {
-  background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: white;
+  box-shadow: 0 4px 15px rgba(0, 229, 160, 0.4);
 }
 .btn-primary:hover {
-  transform: scale(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 229, 160, 0.6);
 }
 .btn-secondary {
-  background-color: var(--color-dark);
+  background: linear-gradient(135deg, var(--color-secondary), var(--color-accent));
   color: white;
+  box-shadow: 0 4px 15px rgba(0, 196, 204, 0.4);
 }
 .btn-secondary:hover {
-  background-color: var(--color-primary);
-  color: var(--color-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 196, 204, 0.6);
 }
 
 /* Cards */

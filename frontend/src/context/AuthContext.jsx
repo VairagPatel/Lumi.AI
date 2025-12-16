@@ -1,83 +1,50 @@
 // src/context/AuthContext.jsx
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // ✅ correct for v4+
+import useAuthStore from '../store/useAuthStore';
 
-const AuthContext = createContext();
+const AuthContext = createContext({
+  user: null,
+  isAuthenticated: false,
+  login: async () => {},
+  googleLogin: async () => {},
+  logout: async () => {}
+});
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const { 
+    user, 
+    isAuthenticated,
+    login: storeLogin, 
+    googleLogin: storeGoogleLogin, 
+    logout: storeLogout,
+    loadUser 
+  } = useAuthStore();
 
-  // Load token from localStorage on refresh
+  // Load user from token on mount
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        setUser({ email: decoded.sub || decoded.username });
-      } catch (err) {
-        console.error("Invalid token in storage:", err);
-        localStorage.removeItem("token");
-      }
-    }
-  }, []);
+    loadUser();
+  }, [loadUser]);
 
-  // ✅ Normal login
-  const login = async (email, password, tokenFromGoogle = null) => {
-    try {
-      let token = tokenFromGoogle;
-
-      if (!token) {
-        const res = await fetch("http://localhost:8080/api/v1/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: email, password }),
-        });
-
-        if (!res.ok) throw new Error("Login failed");
-        const data = await res.json();
-        token = data.token;
-      }
-
-      localStorage.setItem("token", token);
-      const decoded = jwtDecode(token);
-      setUser({ email: decoded.sub || decoded.username });
-
-      navigate("/");
-    } catch (err) {
-      console.error("Login error:", err);
-      alert("Login failed!");
-    }
+  // Wrapper functions to add navigation
+  const login = async (email, password) => {
+    await storeLogin({ email, password });
+    navigate("/create");
   };
 
-  // ✅ Google login reuses same function
   const googleLogin = async (googleIdToken) => {
-    try {
-      const res = await fetch("http://localhost:8080/api/v1/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: googleIdToken }),
-      });
-
-      if (!res.ok) throw new Error("Google login failed");
-      const data = await res.json();
-
-      await login(null, null, data.token);
-    } catch (err) {
-      console.error("Google login failed:", err);
-      alert("Google login failed");
-    }
+    await storeGoogleLogin(googleIdToken);
+    navigate("/create");
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
+  const logout = async () => {
+    await storeLogout();
     navigate("/auth");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, googleLogin, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, googleLogin, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -7,7 +7,7 @@
 
 /* Global styles */
 body {
-  @apply bg-[#F9FAFB] text-[#0D1B2A] font-[Urbanist] antialiased;
+  @apply bg-light text-dark font-[Urbanist] antialiased;
   line-height: 1.6;
 }
 
@@ -16,7 +16,7 @@ a {
   @apply transition-colors duration-200;
 }
 a:hover {
-  @apply text-[#00E5A0];
+  @apply text-primary;
 }
 
 /* Buttons */
@@ -24,15 +24,15 @@ a:hover {
   @apply px-5 py-2 rounded-xl font-semibold shadow-md transition-transform duration-200;
 }
 .btn-primary {
-  @apply bg-gradient-to-r from-[#00E5A0] to-[#00C4CC] text-white hover:scale-105;
+  @apply bg-gradient-to-r from-primary to-secondary text-white hover:scale-105;
 }
 .btn-secondary {
-  @apply bg-[#0D1B2A] text-white hover:bg-[#00E5A0] hover:text-[#0D1B2A];
+  @apply bg-dark text-white hover:bg-primary hover:text-dark;
 }
 
 /* Cards */
 .card {
-  @apply bg-[#F3F4F6] rounded-2xl shadow-sm p-6 hover:shadow-md transition;
+  @apply bg-muted rounded-2xl shadow-sm p-6 hover:shadow-md transition;
 }
 
 /* Scrollbar */
@@ -40,11 +40,11 @@ a:hover {
   width: 10px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-[#F9FAFB];
+  @apply bg-light;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-[#00E5A0] rounded-full;
+  @apply bg-primary rounded-full;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-[#00C4CC];
+  @apply bg-secondary;
 }

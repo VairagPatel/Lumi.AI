@@ -21,7 +21,7 @@ const HeroSection = () => {
         </div>
 
         {/* heading */}
-        <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
+        <h1 className="text-4xl md:text-6xl font-extrabold leading-tight text-[#0D1B2A]">
           Bring Your Ideas to Life with{" "}
           <span className="bg-gradient-to-r from-[#00E5A0] to-[#00C4CC] bg-clip-text text-transparent">
             LumiAI

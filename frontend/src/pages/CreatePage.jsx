@@ -3,19 +3,24 @@ import { Image, FileText, Sparkles } from "lucide-react";
 import PhotoToImageSection from "../components/PhotoToImageSection.jsx";
 import TextToImageSection from "../components/TextToImageSection.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
+import { authAPI } from "../services/api";
 
 const CreatePage = () => {
   const [activeTab, setActiveTab] = useState("photo");
   const { user } = useAuth();
+  const [userCredits, setUserCredits] = useState(null);
 
   // Guest usage tracking
   const [guestGenerations, setGuestGenerations] = useState(0);
-  const MAX_GUEST_GENERATIONS = 3;
+  const MAX_GUEST_GENERATIONS = 1;
 
   useEffect(() => {
     if (!user) {
       const saved = localStorage.getItem("guestGenerations") || 0;
       setGuestGenerations(parseInt(saved, 10));
+    } else {
+      // Fetch user credits
+      fetchUserCredits();
     }
   }, [user]);
 
@@ -25,10 +30,26 @@ const CreatePage = () => {
     }
   }, [guestGenerations, user]);
 
-  const canGenerate = user || guestGenerations < MAX_GUEST_GENERATIONS;
+  const fetchUserCredits = async () => {
+    try {
+      const response = await authAPI.getCurrentUser();
+      // Try to get credits from the API
+      const creditsResponse = await authAPI.getUserCredits();
+      setUserCredits(creditsResponse.data.data);
+    } catch (error) {
+      console.error("Failed to fetch user credits:", error);
+    }
+  };
+
+  const canGenerate = user ? (userCredits === null || userCredits > 0) : guestGenerations < MAX_GUEST_GENERATIONS;
 
   const handleGeneration = () => {
-    if (!user) setGuestGenerations((prev) => prev + 1);
+    if (!user) {
+      setGuestGenerations((prev) => prev + 1);
+    } else {
+      // Refresh credits after generation
+      fetchUserCredits();
+    }
   };
 
   return (
@@ -51,21 +72,32 @@ const CreatePage = () => {
           </p>
         </header>
 
+        {/* User credits banner */}
+        {user && userCredits !== null && (
+          <div className="mb-8 rounded-2xl border border-green-200 bg-green-50 text-green-800 shadow-sm p-4 text-sm text-center">
+            💎 You have{" "}
+            <span className="font-bold text-lg">
+              {userCredits}
+            </span>{" "}
+            credit{userCredits !== 1 ? 's' : ''} remaining. Each generation costs 1 credit.
+          </div>
+        )}
+
         {/* Guest banner */}
-        {!user && (
+        {!user && canGenerate && (
           <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 text-amber-800 shadow-sm p-4 text-sm text-center">
-            ⚡ You’re using LumiAI as a guest. You have{" "}
+            ⚡ You're using LumiAI as a guest. You have{" "}
             <span className="font-bold">
               {Math.max(0, MAX_GUEST_GENERATIONS - guestGenerations)}
             </span>{" "}
-            free generations left today.{" "}
+            free generation left.{" "}
             <a
               href="/auth"
               className="text-[#00C4CC] font-semibold underline underline-offset-2"
             >
               Login / Sign Up
             </a>{" "}
-            to unlock tokens & history.
+            to get 15 free credits!
           </div>
         )}
 
@@ -123,15 +155,40 @@ const CreatePage = () => {
             </div>
           ) : (
             <div className="text-center py-20">
-              <p className="text-gray-600">
-                🚫 You’ve used all {MAX_GUEST_GENERATIONS} free generations today.
-              </p>
-              <a
-                href="/auth"
-                className="mt-4 inline-flex items-center gap-2 rounded-xl px-5 py-3 font-semibold text-white bg-gradient-to-r from-[#00E5A0] to-[#00C4CC] shadow-md hover:shadow-lg active:scale-95 transition"
-              >
-                Get Unlimited with Login
-              </a>
+              <div className="max-w-md mx-auto">
+                <div className="text-6xl mb-4">🎨</div>
+                {user ? (
+                  <>
+                    <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">
+                      You're Out of Credits!
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      Purchase more credits to continue creating amazing AI art.
+                    </p>
+                    <a
+                      href="/pricing"
+                      className="inline-flex items-center gap-2 rounded-xl px-6 py-3 font-semibold text-white bg-gradient-to-r from-[#00E5A0] to-[#00C4CC] shadow-md hover:shadow-lg active:scale-95 transition"
+                    >
+                      Buy More Credits
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">
+                      You've Used Your Free Generation!
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      Sign up now to get <span className="font-bold text-[#00C4CC]">15 free credits</span> and create more amazing AI art!
+                    </p>
+                    <a
+                      href="/auth"
+                      className="inline-flex items-center gap-2 rounded-xl px-6 py-3 font-semibold text-white bg-gradient-to-r from-[#00E5A0] to-[#00C4CC] shadow-md hover:shadow-lg active:scale-95 transition"
+                    >
+                      Sign Up & Get 15 Free Credits
+                    </a>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>

@@ -1,64 +1,115 @@
-// in.LumiAI.api.service.GhibliArtService
 package in.LumiAI.api.service;
 
 import in.LumiAI.api.client.StabilityAIClient;
 import in.LumiAI.api.dto.TextToImageRequest;
+import in.LumiAI.api.entity.User;
+import in.LumiAI.api.exception.BadRequestException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class GhibliArtService {
 
-    private static final Logger log = LoggerFactory.getLogger(GhibliArtService.class);
-
     private final StabilityAIClient stabilityAIClient;
-    private final String apiKey;
+    private final GenerationHistoryService generationHistoryService;
+    private final CreditService creditService;
+    private final MockImageGenerationService mockImageGenerationService;
+    private final PollinationsAIService pollinationsAIService;
+    private final CloudinaryService cloudinaryService;
+    private final PopularContentService popularContentService;
 
-    public GhibliArtService(StabilityAIClient stabilityAIClient,
-                            @Value("${stability.api.key}") String apiKey) {
-        this.stabilityAIClient = stabilityAIClient;
-        this.apiKey = apiKey;
-    }
+    @Value("${stability.api.key}")
+    private String apiKey;
+    
+    @Value("${credits.per-generation:1}")
+    private int creditsPerGeneration;
+    
+    @Value("${app.use-mock-generation:false}")
+    private boolean useMockGeneration;
+    
+    @Value("${app.use-pollinations:true}")
+    private boolean usePollinations;
 
-    public byte[] createGhibliArt(MultipartFile image, String prompt) {
+    public byte[] createGhibliArt(MultipartFile image, String prompt, User user) {
+        validateImage(image);
+        
+        // Check and deduct credits
+        if (!creditService.hasEnoughCredits(user, creditsPerGeneration)) {
+            throw new BadRequestException("Insufficient credits. You need " + creditsPerGeneration + " credit(s) to generate an image.");
+        }
+
         final String engineId = "stable-diffusion-xl-1024-v1-0";
         final String stylePreset = "anime";
-        final double imageStrength = 0.35; // typical value 0.0–1.0
+        final double imageStrength = 0.35;
 
         final String finalPrompt = ((prompt == null ? "" : prompt)
                 + ", in the beautiful, detailed anime style of studio ghibli.").trim();
 
         try {
-            return stabilityAIClient.generateImageFromImage(
-                    "Bearer " + apiKey,
-                    engineId,
+            byte[] result;
+            
+            if (useMockGeneration) {
+                log.info("Using mock image generation (mock mode enabled)");
+                result = mockImageGenerationService.generateMockImage(finalPrompt, stylePreset);
+            } else if (usePollinations) {
+                log.info("Using Pollinations.ai for image-to-image (free API)");
+                result = pollinationsAIService.generateImage(finalPrompt);
+            } else {
+                result = stabilityAIClient.generateImageFromImage(
+                        "Bearer " + apiKey,
+                        engineId,
+                        image,
+                        finalPrompt,
+                        stylePreset,
+                        imageStrength
+                );
+                log.info("Successfully generated image using Stability AI");
+            }
 
-                    // 👇 now sent as init_image (correct name)
-                    image,
+            // Upload to Cloudinary
+            String imageUrl = null;
+            try {
+                var uploadResult = cloudinaryService.uploadImage(result, "lumi-ai/image-to-image");
+                imageUrl = (String) uploadResult.get("secure_url");
+                log.info("Image uploaded to Cloudinary: {}", imageUrl);
+            } catch (Exception e) {
+                log.warn("Failed to upload to Cloudinary, continuing with byte array: {}", e.getMessage());
+            }
 
-                    // 👇 prompt goes in text_prompts[0][text]
-                    finalPrompt,
+            // Track popular content in Redis
+            popularContentService.trackPromptUsage(prompt);
+            popularContentService.trackStyleUsage(stylePreset);
 
-                    stylePreset,
-                    imageStrength
+            // Deduct credits after successful generation
+            creditService.deductCredits(user, creditsPerGeneration);
+
+            // Save to history with Cloudinary URL
+            generationHistoryService.saveHistory(
+                    user, finalPrompt, stylePreset, "IMAGE_TO_IMAGE", imageUrl, true, null
             );
-        } catch (feign.FeignException e) {
-            String body;
-            try { body = e.contentUTF8(); } catch (Exception ignore) { body = "<no-body>"; }
-            log.error("createGhibliArt upstream error: status={}, body={}", e.status(), body, e);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stability error: " + body);
+
+            return result;
         } catch (Exception e) {
-            log.error("createGhibliArt failed", e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Generation failed");
+            log.error("Image-to-image generation failed", e);
+            generationHistoryService.saveHistory(
+                    user, finalPrompt, stylePreset, "IMAGE_TO_IMAGE", null, false, e.getMessage()
+            );
+            throw new BadRequestException("Image generation failed: " + e.getMessage());
         }
     }
 
-    public byte[] createGhibliArtFromText(String prompt, String style) {
+    public byte[] createGhibliArtFromText(String prompt, String style, User user) {
+        // Check and deduct credits
+        if (!creditService.hasEnoughCredits(user, creditsPerGeneration)) {
+            throw new BadRequestException("Insufficient credits. You need " + creditsPerGeneration + " credit(s) to generate an image.");
+        }
+        
         final String engineId = "stable-diffusion-xl-1024-v1-0";
         final String stylePreset =
                 (style == null || style.isBlank() || "general".equals(style))
@@ -69,16 +120,152 @@ public class GhibliArtService {
                 + ", in the beautiful, detailed anime style of studio ghibli.").trim();
 
         try {
-            TextToImageRequest payload = new TextToImageRequest(finalPrompt, stylePreset);
-            return stabilityAIClient.generateImageFromText("Bearer " + apiKey, engineId, payload);
-        } catch (feign.FeignException e) {
-            String body;
-            try { body = e.contentUTF8(); } catch (Exception ignore) { body = "<no-body>"; }
-            log.error("createGhibliArtFromText upstream error: status={}, body={}", e.status(), body, e);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stability error: " + body);
+            byte[] result;
+            
+            if (useMockGeneration) {
+                log.info("Using mock image generation (mock mode enabled)");
+                result = mockImageGenerationService.generateMockImage(finalPrompt, stylePreset);
+            } else if (usePollinations) {
+                log.info("Using Pollinations.ai (free API, no key required)");
+                result = pollinationsAIService.generateImage(finalPrompt);
+            } else {
+                TextToImageRequest payload = new TextToImageRequest(finalPrompt, stylePreset);
+                result = stabilityAIClient.generateImageFromText("Bearer " + apiKey, engineId, payload);
+                log.info("Successfully generated image using Stability AI");
+            }
+
+            // Upload to Cloudinary
+            String imageUrl = null;
+            try {
+                var uploadResult = cloudinaryService.uploadImage(result, "lumi-ai/text-to-image");
+                imageUrl = (String) uploadResult.get("secure_url");
+                log.info("Image uploaded to Cloudinary: {}", imageUrl);
+            } catch (Exception e) {
+                log.warn("Failed to upload to Cloudinary, continuing with byte array: {}", e.getMessage());
+            }
+
+            // Track popular content in Redis
+            popularContentService.trackPromptUsage(prompt);
+            popularContentService.trackStyleUsage(style);
+
+            // Deduct credits after successful generation
+            creditService.deductCredits(user, creditsPerGeneration);
+
+            // Save to history with Cloudinary URL
+            generationHistoryService.saveHistory(
+                    user, finalPrompt, stylePreset, "TEXT_TO_IMAGE", imageUrl, true, null
+            );
+
+            return result;
         } catch (Exception e) {
-            log.error("createGhibliArtFromText failed", e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Generation failed");
+            log.error("Text-to-image generation failed", e);
+            generationHistoryService.saveHistory(
+                    user, finalPrompt, stylePreset, "TEXT_TO_IMAGE", null, false, e.getMessage()
+            );
+            throw new BadRequestException("Image generation failed: " + e.getMessage());
+        }
+    }
+
+    // Guest user methods (no credit checking)
+    public byte[] createGhibliArtForGuest(MultipartFile image, String prompt) {
+        validateImage(image);
+
+        final String engineId = "stable-diffusion-xl-1024-v1-0";
+        final String stylePreset = "anime";
+        final double imageStrength = 0.35;
+
+        final String finalPrompt = ((prompt == null ? "" : prompt)
+                + ", in the beautiful, detailed anime style of studio ghibli.").trim();
+
+        try {
+            byte[] result;
+            
+            if (useMockGeneration) {
+                log.info("Using mock image generation for guest (mock mode enabled)");
+                result = mockImageGenerationService.generateMockImage(finalPrompt, stylePreset);
+            } else if (usePollinations) {
+                log.info("Using Pollinations.ai for guest image-to-image (free API)");
+                result = pollinationsAIService.generateImage(finalPrompt);
+            } else {
+                result = stabilityAIClient.generateImageFromImage(
+                        "Bearer " + apiKey,
+                        engineId,
+                        image,
+                        finalPrompt,
+                        stylePreset,
+                        imageStrength
+                );
+                log.info("Successfully generated image for guest using Stability AI");
+            }
+
+            log.info("Guest user image-to-image generation successful");
+            return result;
+        } catch (Exception e) {
+            log.error("Guest image-to-image generation failed", e);
+            throw new BadRequestException("Image generation failed: " + e.getMessage());
+        }
+    }
+
+    public byte[] createGhibliArtFromTextForGuest(String prompt, String style) {
+        final String engineId = "stable-diffusion-xl-1024-v1-0";
+        final String stylePreset =
+                (style == null || style.isBlank() || "general".equals(style))
+                        ? "anime"
+                        : style.replace("_", "-");
+
+        final String finalPrompt = ((prompt == null ? "" : prompt)
+                + ", in the beautiful, detailed anime style of studio ghibli.").trim();
+
+        try {
+            byte[] result;
+            
+            if (useMockGeneration) {
+                log.info("Using mock image generation for guest (mock mode enabled)");
+                result = mockImageGenerationService.generateMockImage(finalPrompt, stylePreset);
+            } else if (usePollinations) {
+                log.info("Using Pollinations.ai for guest (free API)");
+                result = pollinationsAIService.generateImage(finalPrompt);
+            } else {
+                TextToImageRequest payload = new TextToImageRequest(finalPrompt, stylePreset);
+                result = stabilityAIClient.generateImageFromText("Bearer " + apiKey, engineId, payload);
+                log.info("Successfully generated image for guest using Stability AI");
+            }
+
+            log.info("Guest user text-to-image generation successful");
+            return result;
+        } catch (Exception e) {
+            log.error("Guest text-to-image generation failed", e);
+            throw new BadRequestException("Image generation failed: " + e.getMessage());
+        }
+    }
+
+    @Cacheable(value = "prompts", key = "'suggestion'")
+    public String getPromptSuggestion() {
+        // This can be enhanced with AI-based suggestions
+        return "A magical forest with floating lanterns in Studio Ghibli style";
+    }
+
+    private void validateImage(MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            throw new BadRequestException("Image file is required");
+        }
+
+        String contentType = image.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new BadRequestException("File must be an image");
+        }
+
+        // Max 20MB
+        if (image.getSize() > 20 * 1024 * 1024) {
+            throw new BadRequestException("Image size must not exceed 20MB");
+        }
+    }
+
+    private String getErrorBody(feign.FeignException e) {
+        try {
+            return e.contentUTF8();
+        } catch (Exception ignore) {
+            return "Unknown error";
         }
     }
 }
