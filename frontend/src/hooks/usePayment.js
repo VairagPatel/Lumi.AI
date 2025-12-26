@@ -37,3 +37,12 @@ export const usePaymentHistory = (params) => {
     select: (response) => response.data.data,
   });
 };
+
+export const usePaymentStatus = () => {
+  return useQuery({
+    queryKey: ['payment-status'],
+    queryFn: () => paymentAPI.getStatus(),
+    select: (response) => response.data.data,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};

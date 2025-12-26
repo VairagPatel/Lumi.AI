@@ -42,6 +42,17 @@ public class PaymentService {
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request, User user) {
         try {
+            // Validate credentials before attempting to create order
+            if (razorpayKeyId == null || razorpayKeyId.isEmpty() || 
+                razorpayKeyId.contains("placeholder") || razorpayKeyId.equals("rzp_test_your_key_id")) {
+                throw new BadRequestException("Payment service is not configured. Please contact support.");
+            }
+            
+            if (razorpayKeySecret == null || razorpayKeySecret.isEmpty() || 
+                razorpayKeySecret.contains("placeholder") || razorpayKeySecret.equals("your_razorpay_secret")) {
+                throw new BadRequestException("Payment service is not configured. Please contact support.");
+            }
+            
             // Log credentials for debugging (remove in production!)
             log.info("Using Razorpay Key ID: {}", razorpayKeyId);
             log.info("Key Secret length: {}", razorpayKeySecret != null ? razorpayKeySecret.length() : "null");
@@ -180,11 +191,19 @@ public class PaymentService {
             log.info("Key Secret present: {}", razorpayKeySecret != null && !razorpayKeySecret.isEmpty());
             
             if (razorpayKeyId == null || razorpayKeyId.isEmpty()) {
-                return "ERROR: Razorpay Key ID is not configured";
+                return "ERROR: Razorpay Key ID is not configured. Please set RAZORPAY_KEY_ID in environment variables.";
+            }
+            
+            if (razorpayKeyId.contains("placeholder") || razorpayKeyId.equals("rzp_test_your_key_id")) {
+                return "ERROR: Razorpay Key ID is still using placeholder value. Please replace with actual credentials from https://dashboard.razorpay.com/";
             }
             
             if (razorpayKeySecret == null || razorpayKeySecret.isEmpty()) {
-                return "ERROR: Razorpay Key Secret is not configured";
+                return "ERROR: Razorpay Key Secret is not configured. Please set RAZORPAY_KEY_SECRET in environment variables.";
+            }
+            
+            if (razorpayKeySecret.contains("placeholder") || razorpayKeySecret.equals("your_razorpay_secret")) {
+                return "ERROR: Razorpay Key Secret is still using placeholder value. Please replace with actual credentials from https://dashboard.razorpay.com/";
             }
             
             if (!razorpayKeyId.startsWith("rzp_test_") && !razorpayKeyId.startsWith("rzp_live_")) {
@@ -198,7 +217,7 @@ public class PaymentService {
             
         } catch (RazorpayException e) {
             log.error("Razorpay credentials test failed", e);
-            return "ERROR: " + e.getMessage();
+            return "ERROR: Failed to initialize Razorpay client - " + e.getMessage() + ". Please verify your credentials at https://dashboard.razorpay.com/";
         }
     }
 

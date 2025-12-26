@@ -36,6 +36,7 @@ export const API_CONFIG = {
     '/analytics/popular/styles',
     '/analytics/trending',
     '/payment/test-credentials',
+    '/payment/status',
   ],
   
   // Endpoints that work for both authenticated and guest users

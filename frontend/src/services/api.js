@@ -124,6 +124,7 @@ export const paymentAPI = {
   }),
   getHistory: (params) => api.get('/payment/history', { params }),
   getPaymentById: (paymentId) => api.get(`/payment/${paymentId}`),
+  getStatus: () => api.get('/payment/status'),
   testCredentials: () => api.get('/payment/test-credentials'),
 };
 

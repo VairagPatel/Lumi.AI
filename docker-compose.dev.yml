@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # MySQL Database for Development
+  mysql-dev:
+    image: mysql:8.0
+    container_name: lumiai-mysql-dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: lumiaidb
+      MYSQL_USER: lumiuser
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+      - ./API/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - lumiai-dev-network
+
+  # Redis Cache for Development
+  redis-dev:
+    image: redis:7-alpine
+    container_name: lumiai-redis-dev
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - lumiai-dev-network
+
+  # phpMyAdmin for Database Management
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: lumiai-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql-dev
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql-dev
+    networks:
+      - lumiai-dev-network
+
+  # Redis Commander for Redis Management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: lumiai-redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis-dev:6379:0:${REDIS_PASSWORD}
+    ports:
+      - "8082:8081"
+    depends_on:
+      - redis-dev
+    networks:
+      - lumiai-dev-network
+
+volumes:
+  mysql_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+
+networks:
+  lumiai-dev-network:
+    driver: bridge

@@ -54,7 +54,14 @@ const PhotoToImageSection = ({ onGenerate }) => {
 
     const formData = new FormData();
     formData.append("image", uploadedFile);
-    formData.append("prompt", prompt || "");
+    formData.append("prompt", prompt || "Transform this image into a beautiful Ghibli-style artwork");
+
+    console.log("Generating image with:", {
+      fileName: uploadedFile.name,
+      fileSize: uploadedFile.size,
+      fileType: uploadedFile.type,
+      prompt: prompt || "Transform this image into a beautiful Ghibli-style artwork"
+    });
 
     try {
       const response = await imageToImageMutation.mutateAsync(formData);
@@ -65,8 +72,12 @@ const PhotoToImageSection = ({ onGenerate }) => {
       setGeneratedImage(url);
       saveRecent(url);
       
+      console.log("Image generation successful, blob size:", blob.size);
+      
       // Notify parent component
-      if (onGenerate) onGenerate();
+      if (onGenerate) {
+        onGenerate();
+      }
     } catch (err) {
       console.error("Error generating image:", err);
       const errorMessage = err.response?.data?.message || err.message || "Image generation failed";
@@ -125,8 +136,11 @@ const PhotoToImageSection = ({ onGenerate }) => {
       {/* Upload Section */}
       <div className="bg-[#F9FAFA] p-8 rounded-2xl shadow-md flex flex-col">
         <h2 className="text-2xl font-bold mb-6 text-[#0D1B2A]">
-          Photo to LumiAI Art
+          Transform Your Photo
         </h2>
+        <p className="text-sm text-gray-600 mb-6">
+          Upload your photo and watch LumiAI transform it into a beautiful Ghibli-style artwork while preserving the original composition and elements.
+        </p>
 
         {/* Upload Box */}
         <div
@@ -183,7 +197,7 @@ const PhotoToImageSection = ({ onGenerate }) => {
                   htmlFor="prompt-photo"
                   className="text-md font-semibold mb-2 block text-black"
                 >
-                  Additional Details
+                  Transformation Details (Optional)
                 </label>
                 <textarea
                   id="prompt-photo"
@@ -191,7 +205,7 @@ const PhotoToImageSection = ({ onGenerate }) => {
                   onChange={(e) => setPrompt(e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00E5A0] text-black"
                   rows="2"
-                  placeholder="Add any specific details or enhancements..."
+                  placeholder="Describe how you want to transform your image (e.g., 'make it more colorful', 'add magical elements', 'sunset lighting')..."
                 />
                 <PromptBot onSuggest={(text) => setPrompt(text)} />
               </div>
@@ -202,7 +216,7 @@ const PhotoToImageSection = ({ onGenerate }) => {
               disabled={isCreateDisabled}
               className="mt-6 w-full py-3 px-6 rounded-lg font-bold text-white bg-gradient-to-r from-[#00E5A0] to-[#00C4CC] hover:scale-105 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Transforming..." : "Transform with LumiAI"}
+              {isLoading ? "Transforming Your Photo..." : "Transform Photo to Art"}
             </button>
           </>
         )}
@@ -242,34 +256,7 @@ const PhotoToImageSection = ({ onGenerate }) => {
           </div>
         )}
 
-        {/* Recent Creations */}
-        {recentImages.length > 0 && (
-          <div className="mt-10">
-            <h3 className="text-lg font-semibold text-[#0D1B2A] mb-4">
-              Recent Creations
-            </h3>
-            <div className="grid grid-cols-3 gap-4">
-              {recentImages.map((item, index) => (
-                <div
-                  key={index}
-                  className="relative group border rounded-lg overflow-hidden shadow-sm"
-                >
-                  <img
-                    src={item.url}
-                    alt={`Recent ${index}`}
-                    className="w-full h-28 object-cover"
-                  />
-                  <button
-                    onClick={() => handleDownload(item.url)}
-                    className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center text-sm transition"
-                  >
-                    <Download size={16} className="mr-1" /> Download
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+
       </div>
 
       {/* Result Section */}

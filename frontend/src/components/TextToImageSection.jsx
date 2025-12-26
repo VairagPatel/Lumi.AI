@@ -27,7 +27,20 @@ const TextToImageSection = ({ onGenerate }) => {
     setError(null);
 
     try {
-      const response = await textToImageMutation.mutateAsync({ prompt, style });
+      // Additional validation before API call
+      const requestData = { 
+        prompt: prompt.trim(), 
+        style: style || "general" 
+      };
+      
+      console.log("Sending request data:", requestData);
+      
+      if (!requestData.prompt) {
+        setError("Please enter a description for your artwork.");
+        return;
+      }
+      
+      const response = await textToImageMutation.mutateAsync(requestData);
       
       // Response is a blob
       const blob = response.data;
@@ -35,7 +48,9 @@ const TextToImageSection = ({ onGenerate }) => {
       setGeneratedImage(imageUrl);
       
       // Notify parent component
-      if (onGenerate) onGenerate();
+      if (onGenerate) {
+        onGenerate();
+      }
     } catch (err) {
       console.error("Error generating image from text:", err);
       const errorMessage = err.response?.data?.message || err.message || "Failed to generate image";

@@ -39,10 +39,14 @@ public class GhibliArtService {
     public byte[] createGhibliArt(MultipartFile image, String prompt, User user) {
         validateImage(image);
         
-        // Check and deduct credits
+        // Check and deduct credits BEFORE generation starts
         if (!creditService.hasEnoughCredits(user, creditsPerGeneration)) {
             throw new BadRequestException("Insufficient credits. You need " + creditsPerGeneration + " credit(s) to generate an image.");
         }
+
+        // Deduct credits immediately before generation
+        creditService.deductCredits(user, creditsPerGeneration);
+        log.info("Credits deducted for user: {}. Proceeding with image-to-image generation.", user.getEmail());
 
         final String engineId = "stable-diffusion-xl-1024-v1-0";
         final String stylePreset = "anime";
@@ -86,9 +90,6 @@ public class GhibliArtService {
             popularContentService.trackPromptUsage(prompt);
             popularContentService.trackStyleUsage(stylePreset);
 
-            // Deduct credits after successful generation
-            creditService.deductCredits(user, creditsPerGeneration);
-
             // Save to history with Cloudinary URL
             generationHistoryService.saveHistory(
                     user, finalPrompt, stylePreset, "IMAGE_TO_IMAGE", imageUrl, true, null
@@ -96,7 +97,16 @@ public class GhibliArtService {
 
             return result;
         } catch (Exception e) {
-            log.error("Image-to-image generation failed", e);
+            log.error("Image-to-image generation failed after credits were deducted", e);
+            
+            // Refund credits if generation failed
+            try {
+                creditService.addCredits(user, creditsPerGeneration);
+                log.info("Credits refunded to user: {} due to generation failure", user.getEmail());
+            } catch (Exception refundError) {
+                log.error("Failed to refund credits to user: {}", user.getEmail(), refundError);
+            }
+            
             generationHistoryService.saveHistory(
                     user, finalPrompt, stylePreset, "IMAGE_TO_IMAGE", null, false, e.getMessage()
             );
@@ -105,10 +115,14 @@ public class GhibliArtService {
     }
 
     public byte[] createGhibliArtFromText(String prompt, String style, User user) {
-        // Check and deduct credits
+        // Check and deduct credits BEFORE generation starts
         if (!creditService.hasEnoughCredits(user, creditsPerGeneration)) {
             throw new BadRequestException("Insufficient credits. You need " + creditsPerGeneration + " credit(s) to generate an image.");
         }
+
+        // Deduct credits immediately before generation
+        creditService.deductCredits(user, creditsPerGeneration);
+        log.info("Credits deducted for user: {}. Proceeding with text-to-image generation.", user.getEmail());
         
         final String engineId = "stable-diffusion-xl-1024-v1-0";
         final String stylePreset =
@@ -148,9 +162,6 @@ public class GhibliArtService {
             popularContentService.trackPromptUsage(prompt);
             popularContentService.trackStyleUsage(style);
 
-            // Deduct credits after successful generation
-            creditService.deductCredits(user, creditsPerGeneration);
-
             // Save to history with Cloudinary URL
             generationHistoryService.saveHistory(
                     user, finalPrompt, stylePreset, "TEXT_TO_IMAGE", imageUrl, true, null
@@ -158,7 +169,16 @@ public class GhibliArtService {
 
             return result;
         } catch (Exception e) {
-            log.error("Text-to-image generation failed", e);
+            log.error("Text-to-image generation failed after credits were deducted", e);
+            
+            // Refund credits if generation failed
+            try {
+                creditService.addCredits(user, creditsPerGeneration);
+                log.info("Credits refunded to user: {} due to generation failure", user.getEmail());
+            } catch (Exception refundError) {
+                log.error("Failed to refund credits to user: {}", user.getEmail(), refundError);
+            }
+            
             generationHistoryService.saveHistory(
                     user, finalPrompt, stylePreset, "TEXT_TO_IMAGE", null, false, e.getMessage()
             );

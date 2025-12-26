@@ -44,6 +44,8 @@ public class SecurityConfig {
                                 "/api/v1/generation/text-to-image",
                                 "/api/v1/generation/image-to-image",
                                 "/api/v1/payment/test-credentials",
+                                "/api/v1/payment/status",
+                                "/api/v1/payment/create-order",
                                 "/api/v1/analytics/popular/**",
                                 "/api/v1/analytics/trending",
                                 "/api-docs/**",

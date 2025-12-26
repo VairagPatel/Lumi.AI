@@ -149,49 +149,63 @@ const Header = () => {
           {/* Brand */}
           <Link
             to="/"
-            className="flex items-center gap-2 group"
+            className="flex items-center gap-3 group"
             onClick={closeMenu}
           >
             <div className="relative">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-r from-[#00E5A0] to-[#00C4CC] text-white grid place-items-center font-extrabold shadow-md">
-                L
+              {/* Logo with enhanced design */}
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#00E5A0] via-[#00D4AA] to-[#00C4CC] text-white grid place-items-center font-black shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <span className="text-lg">L</span>
               </div>
-              {/* soft glow */}
-              <span className="pointer-events-none absolute inset-0 rounded-full blur-xl bg-[#00E5A0]/20 -z-10" />
+              {/* Enhanced glow effect */}
+              <span className="pointer-events-none absolute inset-0 rounded-2xl blur-xl bg-gradient-to-br from-[#00E5A0]/30 to-[#00C4CC]/30 -z-10 group-hover:blur-2xl transition-all duration-300" />
             </div>
-            <span className="text-2xl font-extrabold bg-gradient-to-r from-[#00E5A0] to-[#00C4CC] bg-clip-text text-transparent">
-              LumiAI
-            </span>
+            <div className="flex flex-col">
+              <span className="text-2xl font-black bg-gradient-to-r from-[#00E5A0] to-[#00C4CC] bg-clip-text text-transparent group-hover:from-[#00C4CC] group-hover:to-[#00E5A0] transition-all duration-300">
+                LumiAI
+              </span>
+              <span className="text-xs text-[#0D1B2A]/50 font-medium -mt-1 hidden sm:block">
+                AI Art Studio
+              </span>
+            </div>
           </Link>
 
           {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-8">
             <NavItem to="/">Home</NavItem>
-            <NavItem to="/create">Create</NavItem>
-            <NavItem to="/features">Features</NavItem>
+            {isAuthenticated && user && <NavItem to="/create">Create</NavItem>}
             <NavItem to="/gallery">Gallery</NavItem>
+            <NavItem to="/features">Features</NavItem>
+            <NavItem to="/pricing">Pricing</NavItem>
             <NavItem to="/faq">FAQ</NavItem>
             {isAuthenticated && user && <NavItem to="/profile">Profile</NavItem>}
           </div>
 
           {/* Right side */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-4">
             {isAuthenticated && user ? (
               <>
                 <UserDisplayComponent user={user} />
                 <button
                   onClick={logout}
-                  className="px-4 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-[#ff5a5a] to-[#ff7a7a] shadow-md hover:shadow-lg active:scale-95 transition"
+                  className="px-5 py-2.5 rounded-xl font-semibold text-white bg-gradient-to-r from-[#EF4444] to-[#DC2626] shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
                 >
                   Logout
                 </button>
               </>
             ) : (
-              <Link to="/auth">
-                <button className="px-5 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-[#00E5A0] to-[#00C4CC] shadow-md hover:shadow-lg active:scale-95 transition">
-                  Login / Sign Up
-                </button>
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link to="/auth">
+                  <button className="px-4 py-2 text-[#0D1B2A] font-semibold hover:text-[#00C4CC] transition-colors">
+                    Login
+                  </button>
+                </Link>
+                <Link to="/auth">
+                  <button className="px-6 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-[#00E5A0] to-[#00C4CC] shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all duration-200">
+                    Get Started
+                  </button>
+                </Link>
+              </div>
             )}
           </div>
 
@@ -233,11 +247,12 @@ const Header = () => {
             role="menu"
             aria-label="Mobile navigation menu"
           >
-            <div className="container mx-auto px-4 py-3 flex flex-col gap-3">
+            <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
               <NavItem to="/">Home</NavItem>
-              <NavItem to="/create">Create</NavItem>
-              <NavItem to="/features">Features</NavItem>
+              {isAuthenticated && user && <NavItem to="/create">Create</NavItem>}
               <NavItem to="/gallery">Gallery</NavItem>
+              <NavItem to="/features">Features</NavItem>
+              <NavItem to="/pricing">Pricing</NavItem>
               <NavItem to="/faq">FAQ</NavItem>
               {isAuthenticated && user && <NavItem to="/profile">Profile</NavItem>}
 

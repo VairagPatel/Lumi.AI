@@ -90,6 +90,24 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success(payment));
     }
 
+    @GetMapping("/status")
+    @Operation(summary = "Check payment service availability")
+    public ResponseEntity<ApiResponse<Object>> getPaymentStatus() {
+        log.info("Checking payment service status");
+        String credentialsTest = paymentService.testCredentials();
+        
+        boolean isAvailable = credentialsTest.startsWith("SUCCESS");
+        
+        return ResponseEntity.ok(ApiResponse.success("Payment service status", 
+            new Object() {
+                public final boolean available = isAvailable;
+                public final String message = isAvailable ? 
+                    "Payment service is available" : 
+                    "Payment service is currently unavailable. Please contact support.";
+                public final String details = credentialsTest;
+            }));
+    }
+
     @GetMapping("/test-credentials")
     @Operation(summary = "Test Razorpay credentials (for debugging - public endpoint)")
     public ResponseEntity<ApiResponse<String>> testCredentials() {

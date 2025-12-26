@@ -4,10 +4,15 @@ import { generationAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 export const useTextToImage = () => {
+  const queryClient = useQueryClient();
+  
   return useMutation({
     mutationFn: generationAPI.textToImage,
     onSuccess: () => {
       toast.success('Image generated successfully!');
+      // Immediately invalidate and refetch credits
+      queryClient.invalidateQueries(['user-credits']);
+      queryClient.invalidateQueries(['auth']);
     },
     onError: async (error) => {
       let message = 'Generation failed';
@@ -28,15 +33,22 @@ export const useTextToImage = () => {
       }
       
       toast.error(message);
+      // Also refresh credits on error in case credits were deducted but generation failed
+      queryClient.invalidateQueries(['user-credits']);
     },
   });
 };
 
 export const useImageToImage = () => {
+  const queryClient = useQueryClient();
+  
   return useMutation({
     mutationFn: generationAPI.imageToImage,
     onSuccess: () => {
       toast.success('Image transformed successfully!');
+      // Immediately invalidate and refetch credits
+      queryClient.invalidateQueries(['user-credits']);
+      queryClient.invalidateQueries(['auth']);
     },
     onError: async (error) => {
       let message = 'Transformation failed';
@@ -57,6 +69,8 @@ export const useImageToImage = () => {
       }
       
       toast.error(message);
+      // Also refresh credits on error in case credits were deducted but generation failed
+      queryClient.invalidateQueries(['user-credits']);
     },
   });
 };
