@@ -221,8 +221,8 @@ Get LumiAI running in minutes with Docker! Choose between development or product
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/LumiAI.git
-cd LumiAI
+git clone https://github.com/VairagPatel/Lumi.AI.git
+cd Lumi.AI
 
 # Copy and configure environment variables
 cp .env.example .env
@@ -842,7 +842,7 @@ SELECT * FROM payment_transactions ORDER BY created_at DESC LIMIT 10;
 
 If you're still experiencing issues:
 
-1. **Check Existing Issues**: Search [GitHub Issues](https://github.com/yourusername/LumiAI/issues)
+1. **Check Existing Issues**: Search [GitHub Issues](https://github.com/VairagPatel/Lumi.AI/issues)
 2. **Create New Issue**: Include:
    - Operating system and version
    - Docker version (`docker --version`)
@@ -861,8 +861,8 @@ If you're still experiencing issues:
 #### Quick Production Deployment
 ```bash
 # Clone and configure
-git clone https://github.com/yourusername/LumiAI.git
-cd LumiAI
+git clone https://github.com/VairagPatel/Lumi.AI.git
+cd Lumi.AI
 
 # Setup production environment
 cp .env.example .env
@@ -1052,8 +1052,8 @@ We welcome contributions from the community! Here's how you can help make LumiAI
 1. **Fork the Repository**
    ```bash
    # Fork on GitHub, then clone your fork
-   git clone https://github.com/yourusername/LumiAI.git
-   cd LumiAI
+   git clone https://github.com/VairagPatel/Lumi.AI.git
+   cd Lumi.AI
    ```
 
 2. **Set Up Development Environment**
@@ -1213,8 +1213,8 @@ We extend our gratitude to the amazing open-source community and the following p
 ### 💬 Get Help
 - **📧 Email**: support@lumiai.com
 - **💬 Discord**: [Join our community server](https://discord.gg/lumiai)
-- **🐛 Issues**: [GitHub Issues](https://github.com/yourusername/LumiAI/issues)
-- **💡 Discussions**: [GitHub Discussions](https://github.com/yourusername/LumiAI/discussions)
+- **🐛 Issues**: [GitHub Issues](https://github.com/VairagPatel/Lumi.AI/issues)
+- **💡 Discussions**: [GitHub Discussions](https://github.com/VairagPatel/Lumi.AI/discussions)
 
 ### 🌟 Stay Updated
 - **⭐ Star** this repository to show your support
@@ -1262,10 +1262,10 @@ We extend our gratitude to the amazing open-source community and the following p
 
 **Made with ❤️ by the LumiAI Team**
 
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/LumiAI?style=social)](https://github.com/yourusername/LumiAI/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/yourusername/LumiAI?style=social)](https://github.com/yourusername/LumiAI/network/members)
-[![GitHub issues](https://img.shields.io/github/issues/yourusername/LumiAI)](https://github.com/yourusername/LumiAI/issues)
-[![GitHub license](https://img.shields.io/github/license/yourusername/LumiAI)](https://github.com/yourusername/LumiAI/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/VairagPatel/Lumi.AI?style=social)](https://github.com/VairagPatel/Lumi.AI/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/VairagPatel/Lumi.AI?style=social)](https://github.com/VairagPatel/Lumi.AI/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/VairagPatel/Lumi.AI)](https://github.com/VairagPatel/Lumi.AI/issues)
+[![GitHub license](https://img.shields.io/github/license/VairagPatel/Lumi.AI)](https://github.com/VairagPatel/Lumi.AI/blob/main/LICENSE)
 
 **[⬆ Back to Top](#-lumiai---ai-powered-image-generation-platform)**
 
