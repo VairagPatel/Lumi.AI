@@ -904,6 +904,156 @@ CLOUDINARY_API_SECRET=your-production-api-secret
 
 ### ☁️ Cloud Platform Deployment
 
+## 🌐 Production Deployment
+
+LumiAI is designed for easy deployment to modern cloud platforms. We provide comprehensive guides for the most popular deployment options.
+
+### 🚀 Quick Deploy (Recommended)
+
+**Frontend**: Vercel | **Backend**: Render | **Database**: PostgreSQL
+
+Follow our [Quick Deploy Guide](QUICK_DEPLOY_GUIDE.md) for a 30-minute setup!
+
+### 📚 Detailed Deployment Guides
+
+| Component | Platform | Guide | Difficulty |
+|-----------|----------|-------|------------|
+| **Frontend** | Vercel | [deploy-vercel.md](deploy-vercel.md) | ⭐⭐ |
+| **Backend** | Render | [deploy-render.md](deploy-render.md) | ⭐⭐⭐ |
+| **Database** | Multiple Options | [DATABASE_SETUP.md](DATABASE_SETUP.md) | ⭐⭐ |
+| **Complete Setup** | All Platforms | [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) | ⭐⭐⭐⭐ |
+
+### 🎯 Deployment Options
+
+#### Option 1: Serverless (Recommended for most users)
+- **Frontend**: Vercel (Free tier available)
+- **Backend**: Render Web Service ($7/month)
+- **Database**: Render PostgreSQL ($7/month)
+- **Cache**: Upstash Redis (Free tier)
+- **Total Cost**: ~$14/month + API usage
+
+#### Option 2: Traditional Cloud
+- **Frontend**: AWS S3 + CloudFront
+- **Backend**: AWS ECS/EC2 or DigitalOcean Droplet
+- **Database**: AWS RDS or DigitalOcean Managed Database
+- **Cache**: AWS ElastiCache or Redis Cloud
+
+#### Option 3: Self-Hosted
+- **All Services**: Docker Compose on your own server
+- **Requirements**: 4GB RAM, 50GB storage minimum
+- **Cost**: Server costs only
+
+### ⚡ One-Click Deploy
+
+[![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/VairagPatel/Lumi.AI&project-name=lumiai-frontend&root-directory=Frontend)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/VairagPatel/Lumi.AI)
+
+### 🔧 Environment Variables
+
+#### Production Environment Setup
+```bash
+# Copy production template
+cp .env.example .env.production
+
+# Edit with your production values
+# See DEPLOYMENT_CHECKLIST.md for complete list
+```
+
+#### Required API Keys
+- **Stability AI**: Image generation (get from https://platform.stability.ai/)
+- **Google OAuth**: Authentication (get from https://console.developers.google.com/)
+- **Cloudinary**: Image storage (get from https://cloudinary.com/)
+- **Razorpay**: Payments (get from https://razorpay.com/)
+
+### 📊 Deployment Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Vercel CDN    │    │  Render Backend │    │  PostgreSQL DB  │
+│   (Frontend)    │◄──►│   (Spring Boot) │◄──►│   (Database)    │
+│                 │    │                 │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Users/CDN     │    │   Redis Cache   │    │   File Storage  │
+│   (Global)      │    │   (Sessions)    │    │  (Cloudinary)   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+### 🛡️ Production Security Checklist
+
+- [ ] Strong passwords (16+ characters)
+- [ ] Production API keys (not test keys)
+- [ ] HTTPS enabled everywhere
+- [ ] CORS properly configured
+- [ ] JWT secret is secure and unique
+- [ ] Database access restricted
+- [ ] Environment variables secured
+- [ ] Regular security updates
+
+### 📈 Monitoring & Maintenance
+
+#### Recommended Monitoring Tools
+- **Uptime**: UptimeRobot, Pingdom
+- **Errors**: Sentry, LogRocket
+- **Performance**: New Relic, DataDog
+- **Analytics**: Google Analytics, Mixpanel
+
+#### Maintenance Schedule
+- **Weekly**: Check error rates and performance
+- **Monthly**: Update dependencies and security patches
+- **Quarterly**: Review and rotate API keys
+- **Annually**: Security audit and architecture review
+
+### 🚨 Troubleshooting
+
+Common deployment issues and solutions are documented in each deployment guide:
+
+- **Build Failures**: Check Node.js/Java versions
+- **Database Connection**: Verify connection strings
+- **CORS Errors**: Update allowed origins
+- **API Key Issues**: Verify key formats and permissions
+
+### 💰 Cost Optimization
+
+#### Free Tier Setup (Development)
+- Vercel: Free frontend hosting
+- Render: Free web service (limited)
+- Supabase: Free PostgreSQL (500MB)
+- Upstash: Free Redis (10K requests/day)
+- **Total**: $0/month
+
+#### Production Setup
+- Vercel: Free or $20/month (Pro)
+- Render: $7/month (web service) + $7/month (database)
+- Redis: $5-10/month
+- API Usage: Variable based on usage
+- **Total**: $14-44/month + API costs
+
+---
+
+### 📋 Quick Setup Commands
+
+```bash
+# 1. Prepare for deployment
+npm run build                    # Build frontend
+./mvnw clean package -DskipTests # Build backend
+
+# 2. Deploy to platforms (see detailed guides)
+# - Upload to Vercel/Netlify (frontend)
+# - Deploy to Render/Railway (backend)
+# - Configure databases and environment variables
+
+# 3. Test deployment
+curl https://your-backend.onrender.com/api/v1/health
+curl https://your-frontend.vercel.app
+```
+
+For detailed step-by-step instructions, follow the [Complete Deployment Checklist](DEPLOYMENT_CHECKLIST.md).
+
 #### Frontend Deployment (Vercel/Netlify)
 ```bash
 cd Frontend
