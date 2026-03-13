@@ -54,3 +54,17 @@ node_modules/
 # Temporary folders
 tmp/
 temp/
+
+# Documentation and deployment files (keep only README.md)
+DEPLOYMENT_SUMMARY.md
+DEPLOYMENT_CHECKLIST.md
+DATABASE_SETUP.md
+PAYMENT_SETUP.md
+QUICK_DEPLOY_GUIDE.md
+TESTING_GUIDE.md
+DOCKER.md
+deploy-vercel.md
+deploy-render.md
+backend-env-template.txt
+frontend-env-template.txt
+CNAME
